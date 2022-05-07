@@ -2,8 +2,7 @@
 Trabalho1 da disciplina INF1771
 
 Dependencias:
-  pygame
-    python -m pip install pygame
-  
-  colour
-    pip install colour
+<ul>
+<li>pygame:  python -m pip install pygame
+<li>colour:  pip install colour
+</ul>
