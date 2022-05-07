@@ -1,5 +1,4 @@
 import math
-from multiprocessing.connection import wait
 import os
 from Trabalho_1_Interface import Interface
 
