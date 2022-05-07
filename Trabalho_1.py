@@ -1,4 +1,7 @@
+import math
+from multiprocessing.connection import wait
 import os
+from Trabalho_1_Interface import Interface
 
 def create_map(file):
     here = os.path.dirname(os.path.abspath(__file__))
@@ -7,7 +10,10 @@ def create_map(file):
     aux = arq.readlines()
     map = []
     for linha in aux:
-        map.append(list(linha[0:-1]))
+        if list(linha)[-1] == '\n':
+            map.append(list(linha[0:-1]))
+        else:
+            map.append(list(linha))
     return map
 
 def get_points(mapa):
@@ -96,18 +102,19 @@ def get_neighbors(map, point):
     return neighbors
 
 def get_distance(ponto1, ponto2):
-    dist = 0
+    vert = 0
+    hori = 0
     if ponto1[0] > ponto2[0]:
-        dist += ponto1[0] - ponto2[0]
+        vert = ponto1[0] - ponto2[0]
     else:
-        dist += ponto2[0] - ponto1[0]
+        vert = ponto2[0] - ponto1[0]
     if ponto1[1] > ponto2[1]:
-        dist += ponto1[1] - ponto2[1]
+        hori = ponto1[1] - ponto2[1]
     else:
-        dist += ponto2[1] - ponto1[1]
-    return dist
+        hori = ponto2[1] - ponto1[1]
+    return math.sqrt(vert**2 + hori**2)
 
-def find_path_step(map, points, step):
+def find_path_step(map, points, step, interface):
     start = points[step]
     end = points[step+1]
     margem = [start]
@@ -115,6 +122,7 @@ def find_path_step(map, points, step):
     caminho[start[0]][start[1]] = ['s', 0]
     path = [end]
     while end not in margem:
+        interface.update(caminho,path, step)
         min = 100000
         current = [-1,-1]
         next_step = [-1,-1]
@@ -172,16 +180,26 @@ def find_path_step(map, points, step):
         margem.append(next_step)
         caminho[next_step[0]][next_step[1]] = [[current[0]-next_step[0],current[1]-next_step[1]],value]
     while start not in path:
+        interface.update(caminho,path,step)
         ant = caminho[path[0][0]][path[0][1]][0]
         path.insert(0,[path[0][0]+ant[0],path[0][1]+ant[1]])
-    print(path)
+    interface.update([[0 for col in range(len(map[0]))] for row in range(len(map))],path,step)
+    #print(path)
+    return path
 
 
 
 
-
+interface = Interface(300*5,82*7)
 map = create_map('mapa.txt')
-
+interface.add_map(map)
 points = get_points(map)
+path = []
+for i in range(31):
+    path.append(find_path_step(map,points,i,interface))
+interface.finish(path)
 
-find_path_step(map,points,0)
+i=0
+while True:
+    i+=1
+
