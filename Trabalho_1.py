@@ -113,7 +113,7 @@ def get_distance(ponto1, ponto2):
         hori = ponto2[1] - ponto1[1]
     return math.sqrt(vert**2 + hori**2)
 
-def find_path_step(map, points, step, interface):
+def find_path_step(map, points, step, interface, custos):
     start = points[step]
     end = points[step+1]
     margem = [start]
@@ -121,7 +121,7 @@ def find_path_step(map, points, step, interface):
     caminho[start[0]][start[1]] = ['s', 0]
     path = [end]
     while end not in margem:
-        interface.update(caminho,path, step)
+        interface.update(caminho,path, step, custos)
         min = 100000
         current = [-1,-1]
         next_step = [-1,-1]
@@ -179,12 +179,13 @@ def find_path_step(map, points, step, interface):
         margem.append(next_step)
         caminho[next_step[0]][next_step[1]] = [[current[0]-next_step[0],current[1]-next_step[1]],value]
     while start not in path:
-        interface.update(caminho,path,step)
+        interface.update(caminho,path,step,custos)
         ant = caminho[path[0][0]][path[0][1]][0]
         path.insert(0,[path[0][0]+ant[0],path[0][1]+ant[1]])
-    interface.update([[0 for col in range(len(map[0]))] for row in range(len(map))],path,step)
+    interface.update([[0 for col in range(len(map[0]))] for row in range(len(map))],path,step,custos)
     #print(path)
-    return path
+    custo = caminho[end[0]][end[1]][1]
+    return path, custo
 
 
 
@@ -194,8 +195,11 @@ map = create_map('mapa.txt')
 interface.add_map(map)
 points = get_points(map)
 path = []
+custos = []
 for i in range(31):
-    path.append(find_path_step(map,points,i,interface))
+    caminho, custo = find_path_step(map,points,i,interface,custos)
+    path.append(caminho)
+    custos.append(custo)
 interface.finish(path)
 
 i=0

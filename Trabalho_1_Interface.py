@@ -17,12 +17,14 @@ BLACK = (0, 0, 0)
 GRADIENT1 = Color("red")
 GRADIENT2 = Color("green")
 
-SPEED = 10000
+SPEED = 40
+
+BORDER_BOTTOM = 160
 
 class Interface:
     def __init__(self, w=640, h=480):
         self.w = w
-        self.h = h
+        self.h = h+BORDER_BOTTOM
         self.blockW = w/300
         self.blockH = h/82
 
@@ -41,18 +43,18 @@ class Interface:
     def add_andou(self, path):
         self.andou = path
     
-    def update(self,percorreu, path, step):
+    def update(self,percorreu, path, step, custos):
         self.add_percorreu(percorreu)
         self.add_andou(path)
-        self._update_ui(step)
+        self._update_ui(step, custos)
         self.clock.tick(SPEED)
     
-    def _update_ui(self, step):
+    def _update_ui(self, step, custos):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-        self.display.fill(BLACK)
+        self.display.fill(WHITE)
         
         for i in range(len(self.map)):
             for j in range(len(self.map[0])):
@@ -75,8 +77,23 @@ class Interface:
                         pygame.draw.rect(self.display, PINK, pygame.Rect(j*self.blockW, i*self.blockH, self.blockW, self.blockH))
         for ponto in self.andou:
             pygame.draw.rect(self.display, PURPLE, pygame.Rect(ponto[1]*self.blockW, ponto[0]*self.blockH, self.blockW, self.blockH))
-        text = font.render('Etapa: ' + str(step), True, WHITE)
+        text = font.render('Etapa: ' + str(step+1), True, BLACK)
         self.display.blit(text, [0, 0])
+        s = "CUSTOS\n"
+        for i in range(31):
+            if i != 0 and i%8 == 0:
+                s += "\n"
+            if i < len(custos):
+                custo = custos[i]
+                s += "Etapa "+ str(i+1).zfill(2)+": "+ str(int(custo)).zfill(3)+"  "
+            else:
+                s += "Etapa "+ str(i+1).zfill(2)+": 000  "
+        s = s.split("\n")
+        linhas = []
+        for linha in s:
+            linhas.append(font.render(linha, True, BLACK))
+        for i in range(len(linhas)):
+            self.display.blit(linhas[i], [0, self.h-BORDER_BOTTOM+i*30])
         pygame.display.flip()
     
     def finish(self, path):
@@ -95,7 +112,7 @@ class Interface:
                 pygame.quit()
                 quit()
         colors = list(GRADIENT1.range_to(GRADIENT2,steps))
-        self.display.fill(BLACK)
+        self.display.fill(WHITE)
         for i in range(len(self.map)):
             for j in range(len(self.map[0])):
                 terrain = self.map[i][j]
