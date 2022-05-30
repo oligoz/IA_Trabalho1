@@ -1,6 +1,34 @@
+import copy
+import warnings
+import numpy as np
 import math
 import os
+from random import randint, random
 from Trabalho_1_Interface import Interface
+
+warnings.filterwarnings('ignore')
+
+# Print iterations progress
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
 
 def create_map(file):
     here = os.path.dirname(os.path.abspath(__file__))
@@ -183,12 +211,88 @@ def find_path_step(map, points, step, interface, custos):
         ant = caminho[path[0][0]][path[0][1]][0]
         path.insert(0,[path[0][0]+ant[0],path[0][1]+ant[1]])
     interface.update([[0 for col in range(len(map[0]))] for row in range(len(map))],path,step,custos)
-    #print(path)
     custo = caminho[end[0]][end[1]][1]
     return path, custo
 
+def gera_array_aleatorio():
+    array = [[0 for col in range(31)] for row in range(7)]
+    for i in range(7):
+        aux = []
+        while len(aux) < 8:
+            indice = randint(0,30)
+            if indice not in aux:
+                array[i][indice] = 1
+                aux.append(indice)
+    return array
+
+def update_array(array):
+    aux = copy.deepcopy(array)
+    i = randint(0,6)
+    j = randint(0,30)
+    if aux[i][j] == 0:
+        aux[i][j] = 1
+        k = randint(0,30)
+        while k == j or aux[i][k] == 0:
+            k = randint(0,30)
+        aux[i][k] = 0
+    else:
+        aux[i][j] = 0
+        k = randint(0,30)
+        while k == j or aux[i][k] == 1:
+            k = randint(0,30)
+        aux[i][k] = 1
+    return aux
+
+def objective(array, etapas, agilidades):
+    total = 0
+    for j in range(31):
+        soma = 0
+        for i in range(7):
+            soma += array[i][j] * agilidades[i]
+        if soma == 0:
+            soma = 0.000001
+        total += etapas[j]/soma
+    return total
 
 
+def teste(etapas, agilidades, temp, interface):
+    ext = 100
+    intern = 10000
+    for p in range(ext):
+        best = gera_array_aleatorio()
+        best_val = objective(best,etapas,agilidades)
+        if p == 0:
+            melhor = best_val
+            participou = copy.deepcopy(best)
+        curr = copy.deepcopy(best)
+        curr_val = best_val
+        scores = []
+        scores.append(best_val)
+        for i in range(intern):
+            printProgressBar(p*intern+i+1, ext*intern, prefix = 'Progress:', suffix = 'Complete', length = 50)
+            candidate = update_array(curr)
+            candidate_val = objective(candidate, etapas, agilidades)
+            if candidate_val < best_val:
+                best = candidate
+                best_val = candidate_val
+                scores.append(best_val)
+            diff = candidate_val - curr_val
+            t = temp / ((i//10)+1)
+            metropolis = np.exp(-diff / t)
+            if diff < 0 or random() < metropolis:
+                curr, curr_val = candidate, candidate_val
+        if best_val < melhor:
+            melhor = best_val
+            participou = copy.deepcopy(best)  
+    return participou, melhor
+    
+
+
+etapas = []
+for i in range(31):
+    etapas.append((i+1)*10)
+
+agilidades = [1.8,1.6,1.6,1.6,1.4,0.9,0.7]
 
 interface = Interface(300*5,82*7)
 map = create_map('mapa.txt')
@@ -201,8 +305,13 @@ for i in range(31):
     path.append(caminho)
     custos.append(custo)
 interface.finish(path)
+for x in custos:
+    print(x)
+best, best_val = teste(etapas,agilidades,10,interface)
+interface.update_finish(best, custos, best_val)
 
 i=0
 while True:
     i+=1
+
 
