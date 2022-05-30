@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import pygame
 from colour import Color
 
@@ -19,7 +20,7 @@ GRADIENT2 = Color("green")
 
 SPEED = 40
 
-BORDER_BOTTOM = 160
+BORDER_BOTTOM = 260
 
 class Interface:
     def __init__(self, w=640, h=480):
@@ -32,7 +33,6 @@ class Interface:
         self.display= pygame.display.set_mode((self.w, self.h))
         pygame.display.set_caption('Trabalho 1')
         self.clock = pygame.time.Clock()
-        #self.reset()
     
     def add_map(self, map):
         self.map = map
@@ -42,6 +42,9 @@ class Interface:
     
     def add_andou(self, path):
         self.andou = path
+
+    def add_steps(self, steps):
+        self.steps = steps
     
     def update(self,percorreu, path, step, custos):
         self.add_percorreu(percorreu)
@@ -61,7 +64,6 @@ class Interface:
                 if self.percorreu[i][j] != 0:
                     pygame.draw.rect(self.display, RED, pygame.Rect(j*self.blockW, i*self.blockH, self.blockW, self.blockH))
                 else:
-                    #print(i,len(self.map),j,len(self.map[i]))
                     terrain = self.map[i][j]
                     if terrain == ".":
                         pygame.draw.rect(self.display, LIGHT, pygame.Rect(j*self.blockW, i*self.blockH, self.blockW, self.blockH))
@@ -97,21 +99,20 @@ class Interface:
         pygame.display.flip()
     
     def finish(self, path):
-        #print(path)
         self.add_andou(path)
         count = 0
         for etapa in self.andou:
             count += len(etapa)
-        for i in range(count):
-            self._update_finish(self.andou,count)
-            self.clock.tick(SPEED)
+        self.add_steps(count)
+        self.update_finish()
+        self.clock.tick(SPEED)
     
-    def _update_finish(self, path, steps):
+    def update_finish(self, participants = NULL, custos = 0, dificuldade = 0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-        colors = list(GRADIENT1.range_to(GRADIENT2,steps))
+        colors = list(GRADIENT1.range_to(GRADIENT2,self.steps))
         self.display.fill(WHITE)
         for i in range(len(self.map)):
             for j in range(len(self.map[0])):
@@ -129,9 +130,42 @@ class Interface:
                 else:
                     pygame.draw.rect(self.display, PINK, pygame.Rect(j*self.blockW, i*self.blockH, self.blockW, self.blockH))
         count = 0
-        for etapa in path:
+        for etapa in self.andou:
             for ponto in etapa:
-                
                 pygame.draw.rect(self.display, (Color(colors[count]).red*255,Color(colors[count]).green*255,Color(colors[count]).blue*255), pygame.Rect(ponto[1]*self.blockW, ponto[0]*self.blockH, self.blockW, self.blockH))
                 count += 1
+        if (participants == NULL):
+            self.display.blit(font.render("Calculando participantes de cada etapa(Pode levar algum tempo)", True, BLACK), [0, self.h-BORDER_BOTTOM])
+        else:
+            custo = dificuldade
+            s = ""
+            for i in range(len(custos)):
+                custo += custos[i]
+            for i in range(7):
+                if (i == 0):
+                    s += "Aang  : "
+                elif (i == 1):
+                    s += "Zukko : "
+                elif (i == 2):
+                    s += "Toph   : "
+                elif (i == 3):
+                    s += "Katara: "
+                elif (i == 4):
+                    s += "Sokka : "
+                elif (i == 5):
+                    s += "Appa  : "
+                else:
+                    s += "Momo : "
+                aux = " ".join(str(e) for e in participants[i])
+                s += aux
+                s += "\n"
+            s = s.split("\n")
+            linhas = []
+            for linha in s:
+                linhas.append(font.render(linha, True, BLACK))
+            for i in range(len(linhas)):
+                self.display.blit(linhas[i], [0, self.h-BORDER_BOTTOM+i*30])
+            self.display.blit(font.render("Custo total: {:.2f}".format(custo), True, BLACK), [0, self.h-BORDER_BOTTOM+7*30])
+        print("FIM")
         pygame.display.flip()
+    
