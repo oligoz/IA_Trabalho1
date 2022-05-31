@@ -297,10 +297,6 @@ for i in range(31):
 agilidades = [1.8,1.6,1.6,1.6,1.4,0.9,0.7]
 
 interface = Interface(300*5,82*7)
-
-best, best_val = Simulated_annealing(etapas,agilidades,10,interface)
-print(best_val)
-print(best)
 map = create_map('mapa.txt')
 interface.add_map(map)
 points = get_points(map)
@@ -311,8 +307,6 @@ for i in range(31):
     path.append(caminho)
     custos.append(custo)
 interface.finish(path)
-for x in custos:
-    print(x)
 best, best_val = Simulated_annealing(etapas,agilidades,10,interface)
 interface.update_finish(best, custos, best_val)
 
