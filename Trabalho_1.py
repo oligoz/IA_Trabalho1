@@ -227,20 +227,22 @@ def gera_array_aleatorio():
 
 def update_array(array):
     aux = copy.deepcopy(array)
-    i = randint(0,6)
-    j = randint(0,30)
-    if aux[i][j] == 0:
-        aux[i][j] = 1
-        k = randint(0,30)
-        while k == j or aux[i][k] == 0:
+    num = randint(1,20)
+    for i in range(num):
+        i = randint(0,6)
+        j = randint(0,30)
+        if aux[i][j] == 0:
+            aux[i][j] = 1
             k = randint(0,30)
-        aux[i][k] = 0
-    else:
-        aux[i][j] = 0
-        k = randint(0,30)
-        while k == j or aux[i][k] == 1:
+            while k == j or aux[i][k] == 0:
+                k = randint(0,30)
+            aux[i][k] = 0
+        else:
+            aux[i][j] = 0
             k = randint(0,30)
-        aux[i][k] = 1
+            while k == j or aux[i][k] == 1:
+                k = randint(0,30)
+            aux[i][k] = 1
     return aux
 
 def objective(array, etapas, agilidades):
@@ -255,9 +257,9 @@ def objective(array, etapas, agilidades):
     return total
 
 
-def teste(etapas, agilidades, temp, interface):
-    ext = 100
-    intern = 10000
+def Simulated_annealing(etapas, agilidades, temp, interface):
+    ext = 1
+    intern = 1000000
     for p in range(ext):
         best = gera_array_aleatorio()
         best_val = objective(best,etapas,agilidades)
@@ -277,7 +279,7 @@ def teste(etapas, agilidades, temp, interface):
                 best_val = candidate_val
                 scores.append(best_val)
             diff = candidate_val - curr_val
-            t = temp / ((i//10)+1)
+            t = temp / ((i)+1)
             metropolis = np.exp(-diff / t)
             if diff < 0 or random() < metropolis:
                 curr, curr_val = candidate, candidate_val
@@ -295,6 +297,10 @@ for i in range(31):
 agilidades = [1.8,1.6,1.6,1.6,1.4,0.9,0.7]
 
 interface = Interface(300*5,82*7)
+
+best, best_val = Simulated_annealing(etapas,agilidades,10,interface)
+print(best_val)
+print(best)
 map = create_map('mapa.txt')
 interface.add_map(map)
 points = get_points(map)
@@ -307,7 +313,7 @@ for i in range(31):
 interface.finish(path)
 for x in custos:
     print(x)
-best, best_val = teste(etapas,agilidades,10,interface)
+best, best_val = Simulated_annealing(etapas,agilidades,10,interface)
 interface.update_finish(best, custos, best_val)
 
 i=0
