@@ -1,4 +1,5 @@
 import copy
+from time import sleep
 import warnings
 import numpy as np
 import math
@@ -214,7 +215,7 @@ def find_path_step(map, points, step, interface, custos):
     custo = caminho[end[0]][end[1]][1]
     return path, custo
 
-def gera_array_aleatorio():
+def gera_array_aleatorio(agilidades):
     array = [[0 for col in range(31)] for row in range(7)]
     for i in range(7):
         aux = []
@@ -223,11 +224,25 @@ def gera_array_aleatorio():
             if indice not in aux:
                 array[i][indice] = 1
                 aux.append(indice)
+    # O pior personagem vai ficar vivo no final
+    min = agilidades[0]
+    min_index = 0
+    for i, val in enumerate(agilidades):
+        if val < min:
+            min = val
+            min_index = i
+    i = 0
+    while True:
+        if array[min_index][i] == 1:
+            break
+        i += 1
+    array[min_index][i] = 0
     return array
 
-def update_array(array):
+def update_array(array, max, atual):
     aux = copy.deepcopy(array)
-    num = randint(1,20)
+    n = math.ceil(atual/(max/32))
+    num = randint(1,n)
     for i in range(num):
         i = randint(0,6)
         j = randint(0,30)
@@ -258,10 +273,10 @@ def objective(array, etapas, agilidades):
 
 
 def Simulated_annealing(etapas, agilidades, temp, interface):
-    ext = 1
-    intern = 1000000
+    ext = 5 # Quantidade de Simulated Annealing a ser realizado
+    intern = 100000 # Numero de passos em um Simulated Annealing
     for p in range(ext):
-        best = gera_array_aleatorio()
+        best = gera_array_aleatorio(agilidades)
         best_val = objective(best,etapas,agilidades)
         if p == 0:
             melhor = best_val
@@ -272,14 +287,14 @@ def Simulated_annealing(etapas, agilidades, temp, interface):
         scores.append(best_val)
         for i in range(intern):
             printProgressBar(p*intern+i+1, ext*intern, prefix = 'Progress:', suffix = 'Complete', length = 50)
-            candidate = update_array(curr)
+            t = temp / ((i/100)+1)
+            candidate = update_array(curr, temp, t)
             candidate_val = objective(candidate, etapas, agilidades)
             if candidate_val < best_val:
                 best = candidate
                 best_val = candidate_val
                 scores.append(best_val)
             diff = candidate_val - curr_val
-            t = temp / ((i)+1)
             metropolis = np.exp(-diff / t)
             if diff < 0 or random() < metropolis:
                 curr, curr_val = candidate, candidate_val
@@ -307,7 +322,7 @@ for i in range(31):
     path.append(caminho)
     custos.append(custo)
 interface.finish(path)
-best, best_val = Simulated_annealing(etapas,agilidades,10,interface)
+best, best_val = Simulated_annealing(etapas,agilidades,800,interface)
 interface.update_finish(best, custos, best_val)
 
 i=0

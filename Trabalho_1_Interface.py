@@ -18,7 +18,7 @@ BLACK = (0, 0, 0)
 GRADIENT1 = Color("red")
 GRADIENT2 = Color("green")
 
-SPEED = 40
+SPEED = 50
 
 BORDER_BOTTOM = 260
 
@@ -137,27 +137,30 @@ class Interface:
         if (participants == NULL):
             self.display.blit(font.render("Calculando participantes de cada etapa(Pode levar algum tempo)", True, BLACK), [0, self.h-BORDER_BOTTOM])
         else:
-            custo = dificuldade
+            custo = 0
             s = ""
             for i in range(len(custos)):
                 custo += custos[i]
             for i in range(7):
                 if (i == 0):
-                    s += "Aang  : "
+                    s += "Aang: "
                 elif (i == 1):
-                    s += "Zukko : "
+                    s += "Zukko: "
                 elif (i == 2):
-                    s += "Toph   : "
+                    s += "Toph: "
                 elif (i == 3):
                     s += "Katara: "
                 elif (i == 4):
-                    s += "Sokka : "
+                    s += "Sokka: "
                 elif (i == 5):
-                    s += "Appa  : "
+                    s += "Appa: "
                 else:
-                    s += "Momo : "
-                aux = " ".join(str(e) for e in participants[i])
-                s += aux
+                    s += "Momo: "
+                for j, val in enumerate(participants[i]):
+                    if val == 1:
+                        s += str(j+1) + "  "
+                #aux = " ".join(str(e) for e in participants[i])
+                #s += aux
                 s += "\n"
             s = s.split("\n")
             linhas = []
@@ -165,7 +168,7 @@ class Interface:
                 linhas.append(font.render(linha, True, BLACK))
             for i in range(len(linhas)):
                 self.display.blit(linhas[i], [0, self.h-BORDER_BOTTOM+i*30])
-            self.display.blit(font.render("Custo total: {:.2f}".format(custo), True, BLACK), [0, self.h-BORDER_BOTTOM+7*30])
+            self.display.blit(font.render("Custo total: {:} + {:.6f} = {:.6f}".format(custo, dificuldade, custo+dificuldade), True, BLACK), [0, self.h-BORDER_BOTTOM+7*30])
         print("FIM")
         pygame.display.flip()
     
