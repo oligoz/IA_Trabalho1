@@ -145,25 +145,26 @@ def get_distance(ponto1, ponto2):
 def find_path_step(map, points, step, interface, custos):
     start = points[step]
     end = points[step+1]
-    margem = [start]
-    caminho = [[0 for col in range(len(map[0]))] for row in range(len(map))]
+    margem = [start] # Array para guardar pontos ja visitados e que ainda tenham vizinhos nao visitados
+    caminho = [[0 for col in range(len(map[0]))] for row in range(len(map))] # Matriz para guardar o vizinho utilizado para chegar no ponto
     caminho[start[0]][start[1]] = ['s', 0]
-    path = [end]
+    path = [end] # Melhor caminho da origem ate o destino
     while end not in margem:
         interface.update(caminho,path, step, custos)
         min = 100000
-        current = [-1,-1]
-        next_step = [-1,-1]
-        remove = []
+        current = [-1,-1] # Ponto que sera utilizado para alcancar o vizinho
+        next_step = [-1,-1] # Vizinho
+        remove = [] # Lista de pontos para remover da margem (nao possuem mais vizinhos nao visitados)
         for ponto in margem:
             neighbors = get_neighbors(map, ponto)
             if neighbors == []:
                 remove.append(ponto)
             else:
-                exist = None
+                exist = None # Verificar se possui vizinho valido
                 for vizinho in neighbors:
-                    if caminho[vizinho[0]][vizinho[1]] == 0:
+                    if caminho[vizinho[0]][vizinho[1]] == 0: # Ponto ainda nao visitado
                         exist = 1
+                        # Calcula o custo estimado do passo para pegar o melhor vizinho
                         if map[vizinho[0]][vizinho[1]] == '.':
                             value = caminho[ponto[0]][ponto[1]][1] + 1 + get_distance(vizinho, end)
                             if value < min:
@@ -200,19 +201,31 @@ def find_path_step(map, points, step, interface, custos):
                                 min = value
                                 next_step = vizinho
                                 current = ponto
-                if exist == None:
+                if exist == None: # Ponto nao possui vizinhos validos
                     remove.append(ponto)
-        for ponto in remove:
+        for ponto in remove: # Remove pontos da margem
             margem.remove(ponto)
-        value = min - get_distance(next_step, end)
-        margem.append(next_step)
-        caminho[next_step[0]][next_step[1]] = [[current[0]-next_step[0],current[1]-next_step[1]],value]
-    while start not in path:
+        # min eh a soma do custo total para alcancar o ponto + peso do vizinho + distancia euclidiana do vizinho ate o destino
+        value = min - get_distance(next_step, end) # Salva o custo total para alcancar o vizinho (sem a distancia euclidiana)
+        margem.append(next_step) # adiciona o vizinho na margem
+        """
+        Salva um "ponteiro" para o pai do vizinho
+        [linha, coluna]
+
+        [0, 1] - > Veio da direita
+        [1, 0] - > Veio de baixo
+        [0, -1] - > Veio da esquerda
+        [-1, 0] - > Veio de cima
+
+        Para achar o pai basta somar o array com a coordenada do poto
+        """
+        caminho[next_step[0]][next_step[1]] = [[current[0]-next_step[0],current[1]-next_step[1]],value] # Salva o pai e o custo para alcancar o ponto
+    while start not in path: # Reconstitui o caminho tomado para alcancar o destino
         interface.update(caminho,path,step,custos)
-        ant = caminho[path[0][0]][path[0][1]][0]
-        path.insert(0,[path[0][0]+ant[0],path[0][1]+ant[1]])
+        ant = caminho[path[0][0]][path[0][1]][0] # "Ponteiro" para o pai do primeiro ponto presente no path
+        path.insert(0,[path[0][0]+ant[0],path[0][1]+ant[1]]) # Insere no inicio o pai
     interface.update([[0 for col in range(len(map[0]))] for row in range(len(map))],path,step,custos)
-    custo = caminho[end[0]][end[1]][1]
+    custo = caminho[end[0]][end[1]][1] # Custo total para atingir o destino
     return path, custo
 
 def gera_array_aleatorio(agilidades):
