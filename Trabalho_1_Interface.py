@@ -1,3 +1,9 @@
+"""
+Felipe Vieira Ferreira
+Sergio Gabriel
+Mariana Clemente
+Leonardo Mastra
+"""
 from asyncio.windows_events import NULL
 import pygame
 from colour import Color
@@ -168,7 +174,7 @@ class Interface:
                 linhas.append(font.render(linha, True, BLACK))
             for i in range(len(linhas)):
                 self.display.blit(linhas[i], [0, self.h-BORDER_BOTTOM+i*30])
-            self.display.blit(font.render("Custo total: {:} + {:.6f} = {:.6f}".format(custo, dificuldade, custo+dificuldade), True, BLACK), [0, self.h-BORDER_BOTTOM+7*30])
+            self.display.blit(font.render("Custo total: {:} + {:.6f} = {:.6f}".format(int(custo), dificuldade, custo+dificuldade), True, BLACK), [0, self.h-BORDER_BOTTOM+7*30])
         print("FIM")
         pygame.display.flip()
     

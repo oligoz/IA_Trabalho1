@@ -1,3 +1,10 @@
+"""
+Felipe Vieira Ferreira
+Sergio Gabriel
+Mariana Clemente
+Leonardo Mastra
+"""
+
 import copy
 from time import sleep
 import warnings
